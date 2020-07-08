@@ -1,6 +1,11 @@
 # Grijjy Foundation
+Partial forked from grijjy/GrijjyFoundation. This repository contains foundation classes and utilities that are used throughout the other [Grijjy Repositories](https://github.com/grijjy).
 
-This repository contains foundation classes and utilities that are used throughout the other [Grijjy Repositories](https://github.com/grijjy).
+### For install in your project using [boss](https://github.com/HashLoad/boss):
+``` sh
+$ boss install github.com/giorgiobazzo/BsonSerializer
+```
+
 
 ## Grijjy Blog
 
@@ -20,6 +25,3 @@ Take a look at our [Grijjy Blog](https://blog.grijjy.com/) for discussions of ou
 The API documentation for this repository can be found at [https://grijjy.github.io/GrijjyFoundation/](https://grijjy.github.io/GrijjyFoundation/)
 
 It is automatically generated from the source code using a custom version of [PasDoc](https://github.com/pasdoc/pasdoc/wiki).
-
-## Miscellaneous
-You can install [Delphinus package manager](https://github.com/Memnarch/Delphinus/wiki/Installing-Delphinus) and then install our foundation package there. (Delphinus-Support)
