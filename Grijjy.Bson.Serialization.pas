@@ -2,6 +2,8 @@ unit Grijjy.Bson.Serialization;
 (*< Serializing Delphi records and objects to JSON and BSON format (or to
   TgoBsonDocument values).
 
+https://blog.grijjy.com/2017/01/30/efficient-and-easy-to-use-json-and-bson-library/
+
 @bold(Quick Start)
 
   <source>
@@ -591,7 +593,7 @@ type
 type
   { Possible representation types for use with BsonRepresentationAttribute }
   TgoBsonRepresentation = (Default, Boolean, Int32, Int64, Double, &String,
-    DateTime, Document, Binary, ObjectId, Symbol);
+    DateTime, Document, Binary, ObjectId, Symbol, DateTimeUnix);
 
 type
   { Used internally by BsonDefaultValueAttribute to specify a default value }
@@ -1676,7 +1678,7 @@ class procedure TgoBsonSerializer.CheckDateTimeRepresentation(
 begin
   if (not (ARepresentation in [TgoBsonRepresentation.DateTime,
     TgoBsonRepresentation.Document, TgoBsonRepresentation.Int64,
-    TgoBsonRepresentation.String]))
+    TgoBsonRepresentation.String, TgoBsonRepresentation.DateTimeUnix ]))
   then
     raise EgoBsonSerializerError.Create('Invalid date/time representation');
 end;
@@ -1901,6 +1903,12 @@ class function TgoBsonSerializer.DeserializeDateTime(const AInfo: TInfo;
 var
   DT: TgoBsonDateTime;
   Name: String;
+
+  procedure RaiseError;
+  begin
+    raise EgoBsonSerializerError.Create('Unsupported TDateTime deserialization type');
+  end;
+
 begin
   case AReader.GetCurrentBsonType of
     TgoBsonType.DateTime:
@@ -1926,12 +1934,24 @@ begin
       end;
 
     TgoBsonType.Int64:
-      Result := goDateTimeFromTicks(AReader.ReadInt64, True);
+      begin
+        if AInfo.Representation = TgoBsonRepresentation.DateTimeUnix then
+          Result := UnixToDateTime(AReader.ReadInt64, True)
+        else
+          Result := goDateTimeFromTicks(AReader.ReadInt64, True);
+      end;
 
     TgoBsonType.String:
       Result := ISO8601ToDate(AReader.ReadString, True);
+
+    TgoBsonType.Int32:
+      if AInfo.Representation = TgoBsonRepresentation.DateTimeUnix then
+        Result := UnixToDateTime(AReader.ReadInt32, True)
+      else
+        RaiseError;
+
   else
-    raise EgoBsonSerializerError.Create('Unsupported TDateTime deserialization type');
+    RaiseError;
   end;
 end;
 
@@ -2501,7 +2521,11 @@ begin
         if (MS <> 0) then
           S := S + '.' + IntToStr(MS * 10000);
         AWriter.WriteString(S);
-      end
+      end;
+
+    TgoBsonRepresentation.DateTimeUnix:
+      AWriter.WriteInt64(DateTimeToUnix(AValue, True));
+
   else
     Assert(False);
   end;
@@ -3846,7 +3870,7 @@ begin
 
     tkFloat:
       begin
-        if FIgnoreIfDefault and FHasDefaultValue then
+        if FIgnoreIfDefault and FHasDefaultValue and (FRepresentation <> TgoBsonRepresentation.DateTimeUnix)  then
           raise EgoBsonSerializerError.Create('Custom default values are not supported for floating-point types');
 
         if (AType = TypeInfo(TDateTime)) then
@@ -4588,7 +4612,7 @@ begin
 
     tkFloat:
       begin
-        if FIgnoreIfDefault and FHasDefaultValue then
+        if FIgnoreIfDefault and FHasDefaultValue and (FRepresentation <> TgoBsonRepresentation.DateTimeUnix) then
           raise EgoBsonSerializerError.Create('Custom default values are not supported for floating-point types');
 
         if (AType = TypeInfo(TDateTime)) then
