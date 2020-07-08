@@ -1,0 +1,9 @@
+{
+	"name": "BsonSerializer",
+	"description": "Based on grijjy/GrijjyFoundation",
+	"version": "1.0.0",
+	"homepage": "github.com/giorgiobazzo/BsonSerializer",
+	"mainsrc": "./",
+	"projects": [],
+	"dependencies": {}
+}
